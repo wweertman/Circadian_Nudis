@@ -1,0 +1,58 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Thu Jul  2 11:38:29 2020
+
+@author: weertman
+"""
+
+import cv2
+import pandas
+import glob
+
+path_dir = '/home/weertman/Documents/Theresa_FHL/Armina_DeepLabCut/left_test_images/'
+csv_name = '*.csv'
+path_csv = glob.glob(path_dir + csv_name)[0]
+
+path_label = '/home/weertman/Documents/Theresa_FHL/Armina_DeepLabCut/left_test_images_label/'
+
+dat = pandas.read_csv(path_csv)
+dat = dat.iloc[3:]
+
+red = [0,0,255]
+blue = [255, 0, 0]
+
+for index, row in dat.iterrows():
+
+    img_path = path_dir + row[0]
+    img_label = path_label + row[0]
+    img = cv2.imread(img_path)
+    
+    #print(str(index) + ' ' + row[0])
+    
+    n = 1
+    while n < 32:
+        
+        x = int(float(row[n]))
+        y = int(float(row[n+1]))
+        p = float(row[n+2])
+        
+        if p > 0.9:    
+            img[y, x] = red
+ 
+        n = n + 3
+        
+    cv2.imwrite(img_label, img)        
+
+video_name = path_label + 'label_example.avi'
+images = glob.glob(path_label + '*.png')
+frame = cv2.imread(images[0])
+height, width, layers = frame.shape
+video = cv2.VideoWriter(video_name, 0, 1, (width,height))
+
+for image in images:
+    video.write(cv2.imread(image))
+
+cv2.destroyAllWindows()
+video.release()
+        
